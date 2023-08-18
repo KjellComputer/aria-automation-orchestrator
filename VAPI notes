@@ -1,0 +1,49 @@
+var VAPIClient = VAPIEndpoint.client();
+
+//var VMService = new com_vmware_vcenter_VM( VAPIClient );
+var ContentLibraryItemService = new com_vmware_content_library_item( VAPIClient );
+var ContentLibraryItemSpecification = new com_vmware_content_library_item_find__spec();
+
+var ContentLibrarySubscriptionsService = new com_vmware_content_library_subscriptions( VAPIClient );
+var SubscriptionSpecification = new com_vmware_content_library_item_destination__spec;
+var ContentLibrarySubscriptions = ContentLibrarySubscriptionsService.list( ContentLibraryId );
+
+var ContentLibraryTemplateService = new com_vmware_vcenter_vm__template_library__items_check__outs( VAPIClient );
+var CheckOutSpecification = new com_vmware_vcenter_vm__template_library__items_check__outs_check__out__spec;
+var CheckOutPlacementSpecification = new com_vmware_vcenter_vm__template_library__items_check__outs_placement__spec;
+var CheckInSpecification = new com_vmware_vcenter_vm__template_library__items_check__outs_check__in__spec;
+
+ContentLibraryItemSpecification.library_id = ContentLibraryId;
+
+for each ( var ContentLibraryItemName in ContentLibraryItemsName )
+{
+    
+    ContentLibraryItemSpecification.name = ContentLibraryItemName;
+    var ContentLibraryItem = ContentLibraryItemService.find( ContentLibraryItemSpecification );
+    
+    for each ( var ContentLibraryItemId in ContentLibraryItem )
+    {
+        var ContentLibraryItemCheckOutName = ContentLibraryItemName.replace( /Release/g, 'Update' );
+
+        CheckOutSpecification.name = ContentLibraryItemCheckOutName;
+        CheckOutSpecification.powered_on = false;
+        CheckOutPlacementSpecification.cluster = 'domain-c8';
+        CheckOutPlacementSpecification.folder = 'group-v21041';
+        CheckOutSpecification.placement = CheckOutPlacementSpecification;
+        
+        var CheckOut = ContentLibraryTemplateService.check_out( ContentLibraryItemId, CheckOutSpecification );
+        CheckInSpecification.message = 'Aria Automation was here';
+        ContentLibraryTemplateService.check_in( ContentLibraryItemId, CheckOut, CheckInSpecification ); 
+        
+        for each ( var ContentLibrarySubscription in ContentLibrarySubscriptions )
+        {
+            SubscriptionSpecification.subscription = ContentLibrarySubscription.subscribed_library
+            ContentLibraryItemService.publish( ContentLibraryItemId, true, SubscriptionSpecification )
+        }
+    }
+}
+
+
+
+
+
